@@ -1,24 +1,21 @@
-import { NextPage } from "next";
-import { useEffect, useState } from "react";
+import { GetServerSideProps, NextPage } from "next";
+import { useState } from "react";
 
-const IndexPage: NextPage = () => {
-  const [imageUrl, setImageUrl] = useState("");
-  const [loading, setLoading] = useState(true);
-  // NOTE:useEffectはasync関数を渡せない
-  useEffect(() => {
-    fetchImage().then((newImage) => {
-      setImageUrl(newImage.url);
-      setLoading(false);
-    });
-  }, []);
+type Props = {
+  initialImageUrl: string;
+};
 
-  // ボタンをクリックしたときに画像を読み込む処理
+const IndexPage: NextPage<Props> = ({ initialImageUrl }) => {
+  const [imageUrl, setImageUrl] = useState(initialImageUrl);
+  const [loading, setLoading] = useState(false);
+
   const handleClick = async () => {
-    setLoading(true); // 読込中フラグを立てる
+    setLoading(true);
     const newImage = await fetchImage();
-    setImageUrl(newImage.url); // 画像URLの状態を更新する
-    setLoading(false); // 読込中フラグを倒す
+    setImageUrl(newImage.url);
+    setLoading(false);
   };
+
   return (
     <div>
       <button onClick={handleClick}>他のにゃんこも見る</button>
@@ -28,9 +25,21 @@ const IndexPage: NextPage = () => {
 };
 export default IndexPage;
 
+// サーバーサイドで実行する処理
+// Next.jsに認識させるためにexportする
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
+  const image = await fetchImage();
+  return {
+    props: {
+      initialImageUrl: image.url,
+    },
+  };
+};
+
 type Image = {
   url: string;
 };
+
 const fetchImage = async (): Promise<Image> => {
   const res = await fetch("https://api.thecatapi.com/v1/images/search");
   const images = await res.json();

@@ -13,3 +13,8 @@ test("The display of ON/OFF change with click the button", async () => {
     expect(simpleButton).toHaveTextContent("ON");
   });
 });
+
+test('The display is OFF immediately after drawing', () => {
+  const view = render(<SimpleButton />);
+  expect(view.container).toMatchSnapshot();
+});
